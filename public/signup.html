@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sign Up | MyTradingHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0052cc 0%, #003366 100%);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .signup-container {
+      background: #0d234a;
+      padding: 40px 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+    .form-control {
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 1rem;
+    }
+    .btn-primary {
+      background-color: #ffb800;
+      border: none;
+      color: #003366;
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 14px 0;
+      border-radius: 8px;
+      width: 100%;
+      margin-top: 20px;
+      transition: background-color 0.3s ease;
+    }
+    .btn-primary:hover {
+      background-color: #e6a200;
+      color: #001f4d;
+    }
+    .otp-section {
+      margin-top: 30px;
+      display: none;
+    }
+    #otpInput {
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 1rem;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+    #verifyOtpBtn {
+      background-color: #003366;
+      color: #ffb800;
+      border: none;
+      font-weight: 700;
+      padding: 14px 0;
+      border-radius: 8px;
+      width: 100%;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    #verifyOtpBtn:hover {
+      background-color: #0052cc;
+      color: white;
+    }
+    .login-link {
+      margin-top: 20px;
+      display: block;
+      color: #ffb800;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .login-link:hover {
+      text-decoration: underline;
+      color: #e6a200;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="signup-container">
+    <h2>Create Your Account</h2>
+    <form id="signupForm">
+      <input type="email" id="email" placeholder="Email Address" required class="form-control mb-3" />
+      <input type="password" id="password" placeholder="Password" required class="form-control mb-3" />
+      <input type="password" id="confirmPassword" placeholder="Confirm Password" required class="form-control mb-3" />
+      <button type="submit" class="btn-primary">Send OTP</button>
+    </form>
+
+    <div class="otp-section" id="otpSection">
+      <input type="text" id="otpInput" placeholder="Enter OTP" maxlength="6" />
+      <button id="verifyOtpBtn">Verify OTP</button>
+    </div>
+
+    <a href="login.html" class="login-link">Already have an account? Login</a>
+  </div>
+
+<script>
+  const signupForm = document.getElementById('signupForm');
+  const otpSection = document.getElementById('otpSection');
+  const otpInput = document.getElementById('otpInput');
+  const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+
+  let userData = {};
+
+  signupForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if(password !== confirmPassword){
+      alert("Passwords don't match!");
+      return;
+    }
+
+    try {
+      // Send signup info and request OTP
+      const res = await fetch('/send-otp', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({email, password})
+      });
+      const data = await res.json();
+      if(data.success){
+        alert('OTP sent to your email!');
+        userData = { email, password }; // save for verification
+        signupForm.style.display = 'none';
+        otpSection.style.display = 'block';
+      } else {
+        alert(data.message || 'Error sending OTP');
+      }
+    } catch(err){
+      alert('Network error');
+      console.error(err);
+    }
+  });
+
+  verifyOtpBtn.addEventListener('click', async () => {
+    const otp = otpInput.value.trim();
+    if(otp.length !== 6 || isNaN(otp)){
+      alert('Please enter a valid 6-digit OTP');
+      return;
+    }
+
+    try {
+      const res = await fetch('/verify-otp', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({...userData, otp})
+      });
+      const data = await res.json();
+      if(data.success){
+        alert('Registration successful! Redirecting to login...');
+        window.location.href = 'login.html';
+      } else {
+        alert(data.message || 'OTP verification failed');
+      }
+    } catch(err){
+      alert('Network error');
+      console.error(err);
+    }
+  });
+</script>
+
+</body>
+</html>

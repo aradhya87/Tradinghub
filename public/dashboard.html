@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MyTradingHub Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f0f4fb;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background-color: #003366;
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      position: relative;
+    }
+    header .logo {
+      font-weight: 700;
+      font-size: 1.5rem;
+      letter-spacing: 2px;
+    }
+    header .user-info {
+      font-size: 0.9rem;
+      color: #cbd5f7;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+    }
+    header .user-info .email {
+      font-weight: 600;
+      text-decoration: underline;
+    }
+    header .user-info .balance {
+      font-size: 0.85rem;
+      margin-left: 12px;
+    }
+    header .user-info:hover .dropdown-menu {
+      display: block;
+    }
+    /* Dropdown menu for account options */
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 40px;
+      background: white;
+      color: #003366;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.15);
+      min-width: 200px;
+      z-index: 1000;
+      padding: 0;
+    }
+    .dropdown-menu button {
+      width: 100%;
+      background: transparent;
+      border: none;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #003366;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      transition: background-color 0.2s ease;
+    }
+    .dropdown-menu button:hover {
+      background-color: #cbd5f7;
+    }
+    .dropdown-menu button:last-child {
+      border-bottom: none;
+      color: #b22222;
+    }
+
+    .container {
+      flex: 1;
+      display: flex;
+      gap: 1rem;
+      padding: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* Left sidebar: scrollable currency pairs list */
+    nav.sidebar {
+      background-color: white;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgb(0 0 0 / 0.05);
+      width: 220px;
+      padding: 10px 0;
+      display: flex;
+      flex-direction: column;
+      font-weight: 600;
+      color: #003366;
+      overflow-y: auto;
+      max-height: calc(100vh - 84px); /* viewport height minus header */
+    }
+
+    nav.sidebar button.pair-btn {
+      background: transparent;
+      border: none;
+      text-align: left;
+      padding: 10px 16px;
+      border-left: 4px solid transparent;
+      border-radius: 0 8px 8px 0;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      color: #003366;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    nav.sidebar button.pair-btn:hover,
+    nav.sidebar button.pair-btn.active {
+      background-color: #003366;
+      color: white;
+      border-left-color: #f1c40f;
+    }
+
+    nav.sidebar button.option-btn {
+      background: transparent;
+      border: none;
+      text-align: left;
+      padding: 12px 20px;
+      cursor: pointer;
+      font-weight: 700;
+      color: #003366;
+      margin-top: 20px;
+      border-top: 1px solid #eee;
+      transition: background-color 0.3s ease;
+      border-radius: 0 12px 12px 0;
+    }
+    nav.sidebar button.option-btn:hover {
+      background-color: #cbd5f7;
+    }
+
+    /* Price badge */
+    .price-badge {
+      background-color: #f1c40f;
+      color: #003366;
+      font-weight: 700;
+      border-radius: 12px;
+      padding: 2px 8px;
+      font-size: 0.8rem;
+      min-width: 70px;
+      text-align: right;
+      font-family: monospace;
+    }
+
+    /* Main content */
+    main.content {
+      flex: 1;
+      background-color: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgb(0 0 0 / 0.1);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      max-height: calc(100vh - 84px);
+    }
+
+    main.content h2 {
+      color: #003366;
+      margin-bottom: 16px;
+      font-weight: 700;
+    }
+
+    /* TradingView container */
+    #tradingview_container {
+      height: 360px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgb(0 0 0 / 0.1);
+      margin-bottom: 24px;
+    }
+
+    /* Trade control panel */
+    .trade-panel {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .trade-panel label {
+      font-weight: 600;
+      color: #003366;
+    }
+    .trade-panel input[type=number] {
+      width: 80px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1.5px solid #003366;
+      font-weight: 600;
+      color: #003366;
+      text-align: center;
+    }
+    .trade-panel .info {
+      background: #e8f0fe;
+      padding: 12px 18px;
+      border-radius: 10px;
+      color: #003366;
+      font-weight: 600;
+      flex: 1;
+      min-width: 280px;
+    }
+    .trade-panel button {
+      padding: 10px 22px;
+      font-weight: 700;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      color: white;
+      flex: 1 1 120px;
+      transition: background-color 0.3s ease;
+    }
+    .buy-btn {
+      background-color: #2e8b57; /* green */
+    }
+    .buy-btn:hover {
+      background-color: #256e45;
+    }
+    .sell-btn {
+      background-color: #b22222; /* red */
+    }
+    .sell-btn:hover {
+      background-color: #801818;
+    }
+
+    /* Trades history table */
+    .trades-history {
+      margin-top: 20px;
+      overflow-x: auto;
+      max-height: 300px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgb(0 0 0 / 0.1);
+    }
+    .trades-history table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .trades-history th, .trades-history td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+      color: #003366;
+      font-weight: 600;
+    }
+    .trades-history thead {
+      background-color: #cbd5f7;
+    }
+    .profit {
+      color: green;
+      font-weight: 700;
+    }
+    .loss {
+      color: red;
+      font-weight: 700;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px) {
+      .container {
+        flex-direction: column;
+      }
+      nav.sidebar {
+        width: 100%;
+        max-height: 150px;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0 10px;
+        border-radius: 0;
+      }
+      nav.sidebar button.pair-btn {
+        border-radius: 12px;
+        border-left: none;
+        padding: 10px 12px;
+        font-size: 0.9rem;
+      }
+      nav.sidebar button.option-btn {
+        margin-top: 0;
+        border-top: none;
+        font-size: 0.9rem;
+        border-radius: 12px;
+        padding: 10px 12px;
+      }
+      main.content {
+        border-radius: 0;
+        padding: 12px;
+        max-height: none;
+      }
+      #tradingview_container {
+        height: 280px;
+      }
+      .trade-panel {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .trade-panel .info,
+      .trade-panel button,
+      .trade-panel input {
+        flex: none;
+        width: 100%;
+        margin-bottom: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">MyTradingHub</div>
+  <div class="user-info" tabindex="0" aria-haspopup="true" aria-expanded="false" aria-label="User account options">
+    <div class="email" id="userEmail" aria-controls="accountDropdown" aria-haspopup="true" role="button" tabindex="0">user@example.com</div>
+    <div class="balance" id="userBalance">Balance: $1000.00</div>
+    <div class="dropdown-menu" id="accountDropdown" role="menu" aria-label="Account Options">
+      <button role="menuitem" id="depositBtn">Deposit</button>
+      <button role="menuitem" id="withdrawalBtn">Withdrawal</button>
+      <button role="menuitem" id="realNameBtn">Real Name Verification</button>
+      <button role="menuitem" id="inviteBtn">Invite Friends</button>
+      <button role="menuitem" id="changePasswordBtn">Change Password</button>
+      <button role="menuitem" id="announcementBtn">Announcement</button>
+      <button role="menuitem" id="onlineServiceBtn">Online Service</button>
+      <button role="menuitem" id="logoutBtn" style="color:#b22222;">Logout</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <nav class="sidebar" role="navigation" aria-label="Currency Pairs">
+    <!-- Currency pair buttons dynamically inserted here -->
+  </nav>
+
+  <main class="content" id="mainContent" tabindex="0">
+    <h2>Welcome to your Dashboard</h2>
+
+    <!-- TradingView Chart -->
+    <div id="tradingview_container"></div>
+
+    <!-- Trade control panel -->
+    <div class="trade-panel" aria-label="Trade Controls">
+      <label for="lotsInput">Lots:</label>
+      <input type="number" id="lotsInput" min="0.01" step="0.01" value="1" aria-describedby="lotsHelp" />
+      <div class="info" id="tradeInfo" aria-live="polite" aria-atomic="true">
+        Each Lot: 1 Lot = 1 XAUUSD<br />
+        Estimated Handling Fee: 0.000330<br />
+        Estimated Margin: 0.330162
+      </div>
+      <button class="buy-btn" id="buyBtn" aria-label="Buy Button">Buy</button>
+      <button class="sell-btn" id="sellBtn" aria-label="Sell Button">Sell</button>
+    </div>
+
+    <!-- Trades History -->
+    <div class="trades-history" aria-label="Open Trades">
+      <table>
+        <thead>
+          <tr>
+            <th>Pair</th>
+            <th>Lots</th>
+            <th>Type</th>
+            <th>Margin</th>
+            <th>Profit/Loss</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="tradesTableBody">
+          <!-- Trades will appear here -->
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
+<script>
+  // === User data ===
+  let userEmail = localStorage.getItem('userEmail') || 'user@example.com';
+  let userBalance = parseFloat(localStorage.getItem('userBalance')) || 1000.00;
+
+  // Update header info
+  const userEmailEl = document.getElementById('userEmail');
+  const userBalanceEl = document.getElementById('userBalance');
+  const accountDropdown = document.getElementById('accountDropdown');
+  userEmailEl.textContent = userEmail;
+  updateBalanceUI();
+
+  function updateBalanceUI() {
+    userBalanceEl.textContent = `Balance: $${userBalance.toFixed(2)}`;
+    localStorage.setItem('userBalance', userBalance.toFixed(2));
+  }
+
+  // Toggle account dropdown on email click
+  userEmailEl.addEventListener('click', () => {
+    const visible = accountDropdown.style.display === 'block';
+    accountDropdown.style.display = visible ? 'none' : 'block';
+  });
+  // Close dropdown if clicking outside
+  window.addEventListener('click', (e) => {
+    if (!userEmailEl.contains(e.target) && !accountDropdown.contains(e.target)) {
+      accountDropdown.style.display = 'none';
+    }
+  });
+
+  // Logout button logic
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    alert('Logging out...');
+    // Clear user data and redirect to login
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userBalance');
+    localStorage.removeItem('trades');
+    window.location.href = 'login.html'; // update as needed
+  });
+
+  // === Dashboard option buttons logic ===
+  document.getElementById('depositBtn').addEventListener('click', () => alert('Deposit clicked!'));
+  document.getElementById('withdrawalBtn').addEventListener('click', () => alert('Withdrawal clicked!'));
+  document.getElementById('realNameBtn').addEventListener('click', () => alert('Real Name Verification clicked!'));
+  document.getElementById('inviteBtn').addEventListener('click', () => alert('Invite Friends clicked!'));
+  document.getElementById('changePasswordBtn').addEventListener('click', () => alert('Change Password clicked!'));
+  document.getElementById('announcementBtn').addEventListener('click', () => alert('Announcement clicked!'));
+  document.getElementById('onlineServiceBtn').addEventListener('click', () => alert('Online Service clicked!'));
+
+  // === Currency pairs ===
+  // Add all common Forex + XAUUSD pairs for demo
+  const currencyPairs = [
+    "XAUUSD", "EURUSD", "GBPUSD", "USDJPY", "AUDUSD", "USDCAD", "USDCHF", "NZDUSD",
+    "EURGBP", "EURJPY", "GBPJPY", "AUDJPY", "CADJPY", "CHFJPY", "NZDJPY",
+    "EURCHF", "EURCAD", "EURAUD", "GBPCHF", "GBPCAD", "AUDCAD", "AUDCHF", "CADCHF", "NZDCAD", "NZDCHF"
+  ];
+
+  const sidebar = document.querySelector('nav.sidebar');
+
+  // For demo, price data will be randomly generated and updated every 5s
+  // You can replace this with API calls or TradingView widget price feed if available
+  let priceData = {};
+
+  // Create buttons with price badges
+  function createCurrencyButtons() {
+    sidebar.innerHTML = '';
+    currencyPairs.forEach(pair => {
+      const btn = document.createElement('button');
+      btn.className = 'pair-btn';
+      btn.setAttribute('data-pair', pair);
+      btn.setAttribute('aria-label', `Select currency pair ${pair}`);
+      btn.setAttribute('role', 'button');
+      btn.textContent = pair;
+
+      const priceBadge = document.createElement('span');
+      priceBadge.className = 'price-badge';
+      priceBadge.textContent = '...';
+      btn.appendChild(priceBadge);
+
+      sidebar.appendChild(btn);
+    });
+  }
+
+  // Initialize price data
+  function initPriceData() {
+    currencyPairs.forEach(pair => {
+      priceData[pair] = randomPriceForPair(pair);
+    });
+  }
+
+  // Generate random demo price (replace with real feed)
+  function randomPriceForPair(pair) {
+    // Rough realistic demo ranges for each pair base price
+    const basePrices = {
+      XAUUSD: 1950,
+      EURUSD: 1.10,
+      GBPUSD: 1.25,
+      USDJPY: 140,
+      AUDUSD: 0.67,
+      USDCAD: 1.37,
+      USDCHF: 0.93,
+      NZDUSD: 0.59,
+      EURGBP: 0.88,
+      EURJPY: 154,
+      GBPJPY: 176,
+      AUDJPY: 95,
+      CADJPY: 101,
+      CHFJPY: 130,
+      NZDJPY: 83,
+      EURCHF: 1.02,
+      EURCAD: 1.48,
+      EURAUD: 1.63,
+      GBPCHF: 1.16,
+      GBPCAD: 1.71,
+      AUDCAD: 0.92,
+      AUDCHF: 0.62,
+      CADCHF: 0.67,
+      NZDCAD: 0.81,
+      NZDCHF: 0.55
+    };
+    let base = basePrices[pair] || 1;
+    // random fluctuation +/- 0.5%
+    let fluctuation = (Math.random() - 0.5) * base * 0.01;
+    return (base + fluctuation).toFixed(5);
+  }
+
+  // Update price badges
+  function updatePrices() {
+    currencyPairs.forEach(pair => {
+      priceData[pair] = randomPriceForPair(pair);
+    });
+
+    document.querySelectorAll('.pair-btn').forEach(btn => {
+      const pair = btn.getAttribute('data-pair');
+      const priceBadge = btn.querySelector('.price-badge');
+      if(priceBadge) priceBadge.textContent = priceData[pair];
+    });
+  }
+
+  // Select currency pair and reload chart
+  let currentPair = "XAUUSD";
+
+  function createTradingViewWidget(pair) {
+    return new TradingView.widget({
+      container_id: "tradingview_container",
+      width: "100%",
+      height: 360,
+      symbol: pair,
+      interval: "D",
+      timezone: "Etc/UTC",
+      theme: "light",
+      style: "1",
+      locale: "en",
+      toolbar_bg: "#f1f3f6",
+      enable_publishing: false,
+      allow_symbol_change: false,
+      hide_side_toolbar: false,
+      details: true,
+      studies: ["MACD@tv-basicstudies"],
+      withdateranges: true,
+      hideideas: true,
+    });
+  }
+
+  let widget = null;
+
+  function loadChart(pair) {
+    document.getElementById('tradingview_container').innerHTML = '';
+    widget = createTradingViewWidget(pair);
+    updateTradeInfo();
+  }
+
+  // Handle pair button clicks
+  sidebar.addEventListener('click', (e) => {
+    const btn = e.target.closest('button.pair-btn');
+    if (!btn) return;
+
+    if (btn.classList.contains('active')) return;
+
+    document.querySelectorAll('.pair-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    currentPair = btn.getAttribute('data-pair');
+    loadChart(currentPair);
+  });
+
+  // === Trade Info calculation ===
+  const lotsInput = document.getElementById('lotsInput');
+  const tradeInfo = document.getElementById('tradeInfo');
+
+  function updateTradeInfo() {
+    let lots = parseFloat(lotsInput.value) || 0;
+    if (lots < 0) lots = 0;
+    // Sample static multipliers (You can replace with dynamic server-side logic)
+    const handlingFeePerLot = 0.000330;
+    const marginPerLot = 0.330162;
+
+    tradeInfo.innerHTML = `
+      Each Lot: 1 Lot = 1 ${currentPair} <br />
+      Estimated Handling Fee: ${(handlingFeePerLot * lots).toFixed(6)} <br />
+      Estimated Margin: ${(marginPerLot * lots).toFixed(6)}
+    `;
+  }
+
+  lotsInput.addEventListener('input', updateTradeInfo);
+  updateTradeInfo();
+
+  // === Trades management ===
+  let trades = JSON.parse(localStorage.getItem('trades') || '[]');
+
+  function saveTrades() {
+    localStorage.setItem('trades', JSON.stringify(trades));
+  }
+
+  function renderTrades() {
+    const tbody = document.getElementById('tradesTableBody');
+    tbody.innerHTML = '';
+
+    trades.forEach((trade, idx) => {
+      const tr = document.createElement('tr');
+
+      const profitLossClass = trade.profitLoss >= 0 ? 'profit' : 'loss';
+
+      tr.innerHTML = `
+        <td>${trade.pair}</td>
+        <td>${trade.lots.toFixed(2)}</td>
+        <td>${trade.type}</td>
+        <td>${trade.margin.toFixed(6)}</td>
+        <td class="${profitLossClass}">${trade.profitLoss.toFixed(2)}</td>
+        <td><button class="btn btn-sm btn-outline-danger close-trade" data-idx="${idx}" aria-label="Close trade">Close</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    // Close trade buttons
+    document.querySelectorAll('.close-trade').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const idx = parseInt(btn.getAttribute('data-idx'));
+        closeTrade(idx);
+      });
+    });
+  }
+
+  function closeTrade(idx) {
+    const trade = trades[idx];
+    if (!trade) return;
+    // Update balance: add profit/loss
+    userBalance += trade.profitLoss;
+    updateBalanceUI();
+    // Remove trade
+    trades.splice(idx, 1);
+    saveTrades();
+    renderTrades();
+  }
+
+  // === Buy/Sell trade actions ===
+  document.getElementById('buyBtn').addEventListener('click', () => openTrade('Buy'));
+  document.getElementById('sellBtn').addEventListener('click', () => openTrade('Sell'));
+
+  function openTrade(type) {
+    const lots = parseFloat(lotsInput.value);
+    if (!lots || lots <= 0) {
+      alert('Please enter a valid lots value greater than 0');
+      return;
+    }
+
+    // Use static multipliers again, replace with real logic if you want
+    const marginPerLot = 0.330162;
+    const margin = marginPerLot * lots;
+
+    // Check if user has enough balance for margin
+    if (margin > userBalance) {
+      alert('Insufficient balance for the margin required.');
+      return;
+    }
+
+    // Deduct margin from balance on trade open
+    userBalance -= margin;
+    updateBalanceUI();
+
+    // For demo: profitLoss starts at 0 and will be randomly updated later
+    const trade = {
+      pair: currentPair,
+      lots,
+      type,
+      margin,
+      profitLoss: 0,
+    };
+
+    trades.push(trade);
+    saveTrades();
+    renderTrades();
+  }
+
+  // === Simulate Profit/Loss changes ===
+  function simulatePL() {
+    trades.forEach(trade => {
+      // Randomly fluctuate profit/loss between -margin and +margin * 2 (demo only)
+      const fluctuation = (Math.random() - 0.5) * trade.margin * 2;
+      trade.profitLoss = fluctuation;
+    });
+    saveTrades();
+    renderTrades();
+  }
+
+  // Simulate P/L every 5 seconds
+  setInterval(simulatePL, 5000);
+
+  // Initial setup
+  createCurrencyButtons();
+  initPriceData();
+  updatePrices();
+  setInterval(updatePrices, 5000);
+  loadChart(currentPair);
+  renderTrades();
+
+</script>
+
+</body>
+</html>

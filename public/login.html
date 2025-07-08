@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login | MyTradingHub</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    body {
+      background: linear-gradient(135deg, #0052cc 0%, #003366 100%);
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+    .login-container {
+      background: #0d234a;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+    .btn-login {
+      font-weight: 600;
+      font-size: 1.2rem;
+      padding: 14px 0;
+      width: 100%;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+    .btn-real {
+      background-color: #ffb800;
+      color: #003366;
+      border: none;
+    }
+    .btn-real:hover {
+      background-color: #e6a200;
+    }
+    .btn-demo {
+      background-color: #003366;
+      border: 2px solid #ffb800;
+      color: #ffb800;
+    }
+    .btn-demo:hover {
+      background-color: #0052cc;
+      color: white;
+      border-color: #0052cc;
+    }
+    .register-link {
+      margin-top: 20px;
+      font-size: 1rem;
+      display: block;
+      color: #ffb800;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .register-link:hover {
+      text-decoration: underline;
+      color: #e6a200;
+    }
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 30px 20px;
+      }
+      h2 {
+        font-size: 1.8rem;
+      }
+      .btn-login {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <h2>Login to Your Account</h2>
+    <button class="btn-login btn-real" onclick="location.href='login-real.html'">Login to Real Account</button>
+    <button class="btn-login btn-demo" onclick="location.href='login-demo.html'">Login to Demo Account</button>
+    <a href="signup.html" class="register-link">Register Now</a>
+  </div>
+
+</body>
+</html>
